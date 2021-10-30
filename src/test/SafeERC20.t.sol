@@ -42,6 +42,10 @@ contract SafeERC20Test is DSTestPlus {
         verifySafeTransfer(address(erc20), address(0xBEEF), 1e18);
     }
 
+    function testTransferWithNonContract() public {
+        SafeERC20.safeTransfer(SolmateERC20(address(0xBADBEEF)), address(0xBEEF), 1e18);
+    }
+
     function testTransferFromWithMissingReturn() public {
         verifySafeTransferFrom(address(missingReturn), address(0xFEED), address(0xBEEF), 1e18);
     }
@@ -54,6 +58,10 @@ contract SafeERC20Test is DSTestPlus {
         verifySafeTransferFrom(address(erc20), address(0xFEED), address(0xBEEF), 1e18);
     }
 
+    function testTransferFromWithNonContract() public {
+        SafeERC20.safeTransferFrom(SolmateERC20(address(0xBADBEEF)), address(0xFEED), address(0xBEEF), 1e18);
+    }
+
     function testApproveWithMissingReturn() public {
         verifySafeApprove(address(missingReturn), address(0xBEEF), 1e18);
     }
@@ -64,6 +72,10 @@ contract SafeERC20Test is DSTestPlus {
 
     function testApproveWithStandardERC20() public {
         verifySafeApprove(address(transferFromSelf), address(0xBEEF), 1e18);
+    }
+
+    function testApproveWithNonContract() public {
+        SafeERC20.safeApprove(SolmateERC20(address(0xBADBEEF)), address(0xBEEF), 1e18);
     }
 
     function testFailTransferWithReturnsFalse() public {
@@ -102,6 +114,18 @@ contract SafeERC20Test is DSTestPlus {
         verifySafeTransfer(address(erc20), to, amount);
     }
 
+    function testTransferWithNonContract(
+        address nonContract,
+        address to,
+        uint256 amount
+    ) public {
+        if (nonContract.code.length > 0) return;
+
+        if (uint256(uint160(nonContract)) <= 18) return; // Some precompiles cause reverts.
+
+        SafeERC20.safeTransfer(SolmateERC20(nonContract), to, amount);
+    }
+
     function testTransferFromWithMissingReturn(
         address from,
         address to,
@@ -124,6 +148,43 @@ contract SafeERC20Test is DSTestPlus {
         uint256 amount
     ) public {
         verifySafeTransferFrom(address(erc20), from, to, amount);
+    }
+
+    function testTransferFromWithNonContract(
+        address nonContract,
+        address from,
+        address to,
+        uint256 amount
+    ) public {
+        if (nonContract.code.length > 0) return;
+
+        if (uint256(uint160(nonContract)) <= 18) return; // Some precompiles cause reverts.
+
+        SafeERC20.safeTransferFrom(SolmateERC20(nonContract), from, to, amount);
+    }
+
+    function testApproveWithMissingReturn(address to, uint256 amount) public {
+        verifySafeApprove(address(missingReturn), to, amount);
+    }
+
+    function testApproveWithTransferFromSelf(address to, uint256 amount) public {
+        verifySafeApprove(address(transferFromSelf), to, amount);
+    }
+
+    function testApproveWithStandardERC20(address to, uint256 amount) public {
+        verifySafeApprove(address(transferFromSelf), to, amount);
+    }
+
+    function testApproveWithNonContract(
+        address nonContract,
+        address to,
+        uint256 amount
+    ) public {
+        if (nonContract.code.length > 0) return;
+
+        if (uint256(uint160(nonContract)) <= 18) return; // Some precompiles cause reverts.
+
+        SafeERC20.safeApprove(SolmateERC20(nonContract), to, amount);
     }
 
     function testFailTransferWithReturnsFalse(address to, uint256 amount) public {
